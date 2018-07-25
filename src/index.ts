@@ -10,7 +10,6 @@ let tools = [];
 
 function genAttributeExtractor(api: types.IExtensionApi) {
   return (modInfo: any, modPath: string): Promise<{ [key: string]: any }> => {
-    console.log('extract', modPath, modInfo);
     const gameMode = selectors.activeGameId(api.store.getState());
     if ((modPath === undefined) || (gameMode !== 'pillarsofeternity2')) {
       return Promise.resolve({});
@@ -20,8 +19,9 @@ function genAttributeExtractor(api: types.IExtensionApi) {
       .then(jsonData => {
         const data = JSON.parse(jsonData);
         const res: { [key: string]: any } = {
-          minGameVersion: util.getSafe(data, ['SupportedGameVersion', 'min'], '1.0'),
-          maxGameVersion: util.getSafe(data, ['SupportedGameVersion', 'max'], '9.0'),
+          // is this case insensitive?
+          minGameVersion: (util as any).getSafeCI(data, ['SupportedGameVersion', 'min'], '1.0'),
+          maxGameVersion: (util as any).getSafeCI(data, ['SupportedGameVersion', 'max'], '9.0'),
         };
         return res;
       });

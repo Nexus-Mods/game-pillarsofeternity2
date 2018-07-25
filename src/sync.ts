@@ -3,7 +3,7 @@ import { ILoadOrder } from './types';
 import * as Promise from 'bluebird';
 import { app as appIn, remote } from 'electron';
 import * as path from 'path';
-import { fs, types, util } from 'vortex-api';
+import { fs, log, types, util } from 'vortex-api';
 
 const app = remote !== undefined ? remote.app : appIn;
 
@@ -59,6 +59,9 @@ export function startWatch(state: types.IState): Promise<void> {
     return Promise.reject(new Error('Pillars of Eternity 2 wasn\'t discovered'));
   }
   watcher = fs.watch(modConfig(), {}, updateLoadOrder);
+  watcher.on('error', err => {
+    log('error', 'failed to watch poe2 mod directory for changes', { message: err.message });
+  });
 
   return updateLoadOrder();
 }

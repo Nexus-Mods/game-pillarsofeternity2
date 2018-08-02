@@ -41,6 +41,8 @@ function prepareForModding(discovery): Promise<void> {
   return fs.ensureDirAsync(path.join(discovery.path, modPath()));
 }
 
+const emptyObj = {};
+
 function init(context: types.IExtensionContext) {
   (context as any).registerGame({
     id: 'pillarsofeternity2',
@@ -71,7 +73,7 @@ function init(context: types.IExtensionContext) {
       console.log('profile', state.persistent.profiles);
       console.log('active profile', selectors.activeProfile(state));
       return {
-        mods: state.persistent.mods['pillarsofeternity2'],
+        mods: state.persistent.mods['pillarsofeternity2'] || emptyObj,
         profile: selectors.activeProfile(state),
         loadOrder: getLoadOrder(),
         onSetLoadOrder: (order: ILoadOrder) => {

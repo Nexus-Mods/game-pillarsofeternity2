@@ -1,10 +1,11 @@
 import LoadOrder from './views/LoadOrder';
 
-import * as Promise from 'bluebird';
-import * as path from 'path';
-import { fs, selectors, types, util } from 'vortex-api';
 import { getLoadOrder, startWatch, stopWatch, setLoadOrder } from './sync';
 import { ILoadOrder } from './types';
+
+import * as Promise from 'bluebird';
+import * as path from 'path';
+import { fs, log, selectors, types, util } from 'vortex-api';
 
 let tools = [];
 
@@ -17,13 +18,18 @@ function genAttributeExtractor(api: types.IExtensionApi) {
     return fs.readFileAsync(path.join(modPath, 'manifest.json'), { encoding: 'utf-8' })
       .catch(() => '{}')
       .then(jsonData => {
-        const data = JSON.parse(jsonData);
-        const res: { [key: string]: any } = {
-          // is this case insensitive?
-          minGameVersion: (util as any).getSafeCI(data, ['SupportedGameVersion', 'min'], '1.0'),
-          maxGameVersion: (util as any).getSafeCI(data, ['SupportedGameVersion', 'max'], '9.0'),
-        };
-        return res;
+        try {
+          const data = JSON.parse(jsonData);
+          const res: { [key: string]: any } = {
+            // is this case insensitive?
+            minGameVersion: (util as any).getSafeCI(data, ['SupportedGameVersion', 'min'], '1.0'),
+            maxGameVersion: (util as any).getSafeCI(data, ['SupportedGameVersion', 'max'], '9.0'),
+          };
+          return res;
+        } catch (err) {
+          log('warn', 'Invalid manifest.json', { modPath });
+          return {};
+        }
       });
   }
 }

@@ -75,9 +75,6 @@ function init(context: types.IExtensionContext) {
     visible: () => selectors.activeGameId(context.api.store.getState()) === 'pillarsofeternity2',
     props: () => {
       const state: types.IState = context.api.store.getState();
-      console.log('profile id', util.getSafe(state, ['settings', 'profiles', 'activeProfileId'], undefined));
-      console.log('profile', state.persistent.profiles);
-      console.log('active profile', selectors.activeProfile(state));
       return {
         mods: state.persistent.mods['pillarsofeternity2'] || emptyObj,
         profile: selectors.activeProfile(state),

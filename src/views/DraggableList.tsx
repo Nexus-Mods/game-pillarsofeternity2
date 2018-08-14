@@ -172,7 +172,7 @@ class DraggableList extends ComponentEx<IProps, IState> {
   }
 
   public take = (item: ILoadOrderDisplayItem) => {
-    const { ordered } = this.nextState;
+    const { ordered } = this.state;
     const index = ordered.findIndex(iter => iter.id === item.id);
     const copy = ordered.slice(0);
     const res = copy.splice(index, 1)[0];
@@ -186,7 +186,7 @@ class DraggableList extends ComponentEx<IProps, IState> {
     }
 
     const item = take();
-    const copy = this.nextState.ordered.slice(0);
+    const copy = this.state.ordered.slice(0);
     copy.splice(newIndex, 0, item);
 
     this.nextState.ordered = copy;

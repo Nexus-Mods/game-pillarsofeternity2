@@ -16,18 +16,29 @@ function modConfig(): string {
   return path.join(poe2Path, 'modconfig.json');
 }
 
-function updateLoadOrder(): Promise<void> {
+
+function updateLoadOrder(tries: number = 3): Promise<void> {
   return fs.readFileAsync(modConfig(), { encoding: 'utf-8' })
     .catch(() => '{}')
     .then(jsonData => {
-      const data = JSON.parse(jsonData);
-      loadOrder = (data.Entries || []).reduce((prev, entry, idx) => {
-        prev[entry.FolderName] = {
-          pos: idx,
-          enabled: entry.Enabled,
-        };
-        return prev;
-      }, {});
+      try {
+        const data = JSON.parse(jsonData);
+        loadOrder = (data.Entries || []).reduce((prev, entry, idx) => {
+          prev[entry.FolderName] = {
+            pos: idx,
+            enabled: entry.Enabled,
+          };
+          return prev;
+        }, {});
+      } catch (err) {
+        // this probably happens when poe2 is currently writing to that file,
+        log('debug', 'update load order', { tries });
+        if (tries > 0) {
+          return Promise.delay(100).then(() => updateLoadOrder(tries - 1));
+        } else {
+          return Promise.reject(err);
+        }
+      }
     });
 }
 
@@ -58,7 +69,12 @@ export function startWatch(state: types.IState): Promise<void> {
     // game is activated and it has to be discovered for that
     return Promise.reject(new Error('Pillars of Eternity 2 wasn\'t discovered'));
   }
-  watcher = fs.watch(modConfig(), {}, updateLoadOrder);
+  const loDebouncer = new util.Debouncer(() => {
+    return updateLoadOrder();
+  }, 200);
+  watcher = fs.watch(modConfig(), {}, () => {
+    loDebouncer.schedule();
+  });
   watcher.on('error', err => {
     log('error', 'failed to watch poe2 mod directory for changes', { message: err.message });
   });

@@ -107,9 +107,7 @@ class LoadOrder extends ComponentEx<ILoadOrderProps, ILoadOrderState> {
   private updateState(props: ILoadOrderProps) {
     const { mods, loadOrder, profile } = props;
 
-    console.log('update state', profile);
-  
-    const sorted = Object.keys(loadOrder)
+    const sorted = Object.keys(loadOrder || {})
       .filter(lo => (mods[lo] !== undefined) && util.getSafe(profile, ['modState', lo, 'enabled'], false))
       .sort((lhs, rhs) => loadOrder[lhs].pos - loadOrder[rhs].pos);
 

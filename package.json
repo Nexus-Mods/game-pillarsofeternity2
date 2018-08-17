@@ -8,7 +8,7 @@
     "webpack": "node ./node_modules/webpack/bin/webpack --config webpack.config.js --display-error-details --progress --profile --color",
     "copy_gameart": "copyfiles -f assets/gameart.png dist",
     "copy_scss": "copyfiles -f src/stylesheet.scss dist",
-    "build": "npm run webpack && npm run copy_gameart && npm run copy_scss && extractInfo"
+    "build": "yarn run webpack && yarn run copy_gameart && yarn run copy_scss && extractInfo"
   },
   "author": "Black Tree Gaming Ltd",
   "license": "GPL-3.0",
@@ -18,7 +18,6 @@
     ]
   },
   "devDependencies": {
-    "@types/bluebird": "3.5.20",
     "@types/i18next": "^8.4.3",
     "@types/node": "^10.3.4",
     "@types/react-bootstrap": "^0.32.10",
@@ -30,6 +29,7 @@
     "@types/semver": "^5.5.0",
     "babel-core": "^6.26.3",
     "babel-loader": "^7.1.4",
+    "bluebird": "^3.5.1",
     "copyfiles": "^2.0.0",
     "electron": "2.0.4",
     "react-dnd": "^2.5.4",

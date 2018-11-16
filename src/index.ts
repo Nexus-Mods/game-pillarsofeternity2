@@ -6,6 +6,10 @@ import { ILoadOrder } from './types';
 import * as Promise from 'bluebird';
 import * as path from 'path';
 import { fs, log, selectors, types, util } from 'vortex-api';
+import { app as appIn, remote } from 'electron';
+
+const app = remote !== undefined ? remote.app : appIn;
+const poe2LocalLowPath = path.resolve(app.getPath('appData'), '..', 'LocalLow', 'Obsidian Entertainment', 'Pillars of Eternity II');
 
 let tools = [];
 
@@ -43,8 +47,33 @@ function modPath(): string {
   return path.join('PillarsOfEternityII_Data', 'override');
 }
 
+function modConfig(): string {
+  return path.join(poe2LocalLowPath, 'modconfig.json');
+}
+
 function prepareForModding(discovery): Promise<void> {
-  return fs.ensureDirAsync(path.join(discovery.path, modPath()));
+  return createModConfigFile().then(
+    () => fs.ensureDirAsync(path.join(discovery.path, modPath())));
+}
+
+function createModConfigFile(): Promise<void> {
+  return fs.statAsync(modConfig())
+    .then(st => Promise.resolve())
+    .catch(err => {
+      if ((err as any).code === 'ENOENT') {
+        return writeModConfigFile()
+      } else {
+        return Promise.reject(err);
+      }
+    });
+}
+
+function writeModConfigFile(): Promise<void> {
+  const data = {
+    Entries: []
+  };
+  return fs.ensureFileAsync(modConfig())
+    .then(() => fs.writeFileAsync(modConfig(), JSON.stringify(data, undefined, 2), { encoding: 'utf-8' }));
 }
 
 const emptyObj = {};

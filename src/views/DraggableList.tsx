@@ -50,7 +50,7 @@ class DraggableItem extends React.Component<IItemProps, {}> {
   }
 }
 
-const DND_TYPE = 'morrowind-plugin-entry';
+const DND_TYPE = 'poe2-plugin-entry';
 
 function collectDrag(connect: __ReactDnd.DragSourceConnector,
                      monitor: __ReactDnd.DragSourceMonitor) {

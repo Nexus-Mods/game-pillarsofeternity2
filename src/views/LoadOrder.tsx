@@ -125,11 +125,15 @@ class LoadOrder extends ComponentEx<ILoadOrderProps, ILoadOrderState> {
 
   private applyEnabled = (ordered: ILoadOrderDisplayItem[]) => {
     this.nextState.enabled = ordered;
+    this.nextState.disabled = this.state.disabled.filter(entry => 
+      ordered.find(item => item === entry) === undefined)
     this.mWriteDebouncer.schedule();
   }
 
   private applyDisabled = (ordered: ILoadOrderDisplayItem[]) => {
     this.nextState.disabled = ordered;
+    this.nextState.enabled = this.state.enabled.filter(entry => 
+      ordered.find(item => item === entry) === undefined)
     this.mWriteDebouncer.schedule();
   }
 }

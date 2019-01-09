@@ -10,7 +10,7 @@
     "copy_scss": "copyfiles -f src/stylesheet.scss dist",
     "build": "yarn run webpack && yarn run copy_gameart && yarn run copy_scss && extractInfo"
   },
-  "author": "Black Tree Gaming Ltd",
+  "author": "Black Tree Gaming Ltd.",
   "license": "GPL-3.0",
   "babel": {
     "presets": [

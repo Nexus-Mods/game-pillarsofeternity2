@@ -16,7 +16,6 @@ function modConfig(): string {
   return path.join(poe2Path, 'modconfig.json');
 }
 
-
 function updateLoadOrder(tries: number = 3): Promise<void> {
   return fs.readFileAsync(modConfig(), { encoding: 'utf-8' })
     .catch(() => '{}')
@@ -36,7 +35,9 @@ function updateLoadOrder(tries: number = 3): Promise<void> {
         if (tries > 0) {
           return Promise.delay(100).then(() => updateLoadOrder(tries - 1));
         } else {
-          return Promise.reject(err);
+          return (err.message.indexOf('Unexpected token') !== -1)
+            ? Promise.reject(new util.DataInvalid('Invalid config file'))
+            : Promise.reject(err);
         }
       }
     });

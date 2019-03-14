@@ -1,19 +1,21 @@
 import LoadOrder from './views/LoadOrder';
 
-import { getLoadOrder, startWatch, stopWatch, setLoadOrder } from './sync';
+import { getLoadOrder, setLoadOrder, startWatch, stopWatch } from './sync';
 import { ILoadOrder } from './types';
 
 import * as Promise from 'bluebird';
+import { app as appIn, remote } from 'electron';
 import * as path from 'path';
 import { fs, log, selectors, types, util } from 'vortex-api';
-import { app as appIn, remote } from 'electron';
 
 const app = remote !== undefined ? remote.app : appIn;
-const poe2LocalLowPath = path.resolve(app.getPath('appData'), '..', 'LocalLow', 'Obsidian Entertainment', 'Pillars of Eternity II');
+const poe2LocalLowPath = path.resolve(app.getPath('appData'),
+  '..', 'LocalLow', 'Obsidian Entertainment', 'Pillars of Eternity II');
 
-let tools = [];
+const tools = [];
 
 function genAttributeExtractor(api: types.IExtensionApi) {
+  // tslint:disable-next-line:no-shadowed-variable
   return (modInfo: any, modPath: string): Promise<{ [key: string]: any }> => {
     const gameMode = selectors.activeGameId(api.store.getState());
     if ((modPath === undefined) || (gameMode !== 'pillarsofeternity2')) {
@@ -35,7 +37,7 @@ function genAttributeExtractor(api: types.IExtensionApi) {
           return {};
         }
       });
-  }
+  };
 }
 
 function findGame(): Promise<string> {
@@ -61,7 +63,7 @@ function createModConfigFile(): Promise<void> {
     .then(st => Promise.resolve())
     .catch(err => {
       if ((err as any).code === 'ENOENT') {
-        return writeModConfigFile()
+        return writeModConfigFile();
       } else {
         return Promise.reject(err);
       }
@@ -70,10 +72,11 @@ function createModConfigFile(): Promise<void> {
 
 function writeModConfigFile(): Promise<void> {
   const data = {
-    Entries: []
+    Entries: [],
   };
   return fs.ensureFileAsync(modConfig())
-    .then(() => fs.writeFileAsync(modConfig(), JSON.stringify(data, undefined, 2), { encoding: 'utf-8' }));
+    .then(() => fs.writeFileAsync(modConfig(),
+      JSON.stringify(data, undefined, 2), { encoding: 'utf-8' }));
 }
 
 const emptyObj = {};
@@ -121,6 +124,15 @@ function init(context: types.IExtensionContext) {
     context.api.events.on('gamemode-activated', (gameMode: string) => {
       if (gameMode === 'pillarsofeternity2') {
         startWatch(context.api.store.getState())
+          .catch(util.DataInvalid, err => {
+            const errorMessage = 'Your mod configuration file is invalid, you must remove/fix '
+                               + 'this file for the mods to function correctly. The file is '
+                               + 'located in: '
+                               // tslint:disable-next-line:max-line-length
+                               + '"C:\\Users\\{YOUR_USERNAME}\\AppData\\LocalLow\\Obsidian Entertainment\\Pillars of Eternity II\\modconfig.json"';
+            context.api.showErrorNotification('Invalid modconfig.json file',
+            errorMessage, { allowReport: false });
+          })
           .catch(err => {
             context.api.showErrorNotification('Failed to update modorder', err);
           });

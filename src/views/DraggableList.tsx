@@ -157,7 +157,7 @@ class DraggableList extends ComponentEx<IProps, IState> {
     const { connectDropTarget, id, itemRenderer } = this.props;
     const { ordered } = this.state;
     return connectDropTarget(
-      <div>
+      <div style={{ overflow: 'auto', maxHeight: '100%' }}>
         <ListGroup>
           {ordered.map((item, idx) => (
               <Draggable

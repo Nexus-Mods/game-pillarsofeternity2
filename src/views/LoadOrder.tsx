@@ -32,8 +32,6 @@ class LoadOrder extends ComponentEx<ILoadOrderProps, ILoadOrderState> {
       disabled: [],
     });
 
-    this.updateState(props);
-
     this.mWriteDebouncer = new util.Debouncer(() => {
       const { enabled, disabled } = this.state;
       const newOrder: ILoadOrder = {};
@@ -44,6 +42,10 @@ class LoadOrder extends ComponentEx<ILoadOrderProps, ILoadOrderState> {
       this.props.onSetLoadOrder(newOrder);
       return null;
     }, 2000);
+  }
+
+  public componentDidMount() {
+    this.updateState(this.props);
   }
 
   public componentWillReceiveProps(newProps: ILoadOrderProps) {
@@ -112,28 +114,31 @@ class LoadOrder extends ComponentEx<ILoadOrderProps, ILoadOrderState> {
       .sort((lhs, rhs) => loadOrder[lhs].pos - loadOrder[rhs].pos);
 
     const mapToItem = (id: string) => ({ id, name: util.renderModName(mods[id]) });
-  
+
     this.nextState.enabled = sorted
       .filter(id => loadOrder[id].enabled)
       .map(mapToItem);
 
+    // disabled list should also include mods that currently have no load order assigned
     this.nextState.disabled = [].concat(
       sorted.filter(id => !loadOrder[id].enabled),
-      Object.keys(mods).filter(id => loadOrder[id] === undefined),
+      Object.keys(mods)
+        .filter(id => (loadOrder[id] === undefined)
+                   && util.getSafe(profile, ['modState', id, 'enabled'], false)),
     ).map(mapToItem);
   }
 
   private applyEnabled = (ordered: ILoadOrderDisplayItem[]) => {
     this.nextState.enabled = ordered;
     this.nextState.disabled = this.state.disabled.filter(entry => 
-      ordered.find(item => item === entry) === undefined)
+      ordered.find(item => item.id === entry.id) === undefined)
     this.mWriteDebouncer.schedule();
   }
 
   private applyDisabled = (ordered: ILoadOrderDisplayItem[]) => {
     this.nextState.disabled = ordered;
     this.nextState.enabled = this.state.enabled.filter(entry => 
-      ordered.find(item => item === entry) === undefined)
+      ordered.find(item => item.id === entry.id) === undefined)
     this.mWriteDebouncer.schedule();
   }
 }

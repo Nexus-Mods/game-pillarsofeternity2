@@ -11,8 +11,9 @@ interface IItemBaseProps {
   item: ILoadOrderDisplayItem;
   itemRenderer: React.ComponentClass<{ className?: string, item: any }>;
   containerId: string;
-  take: (item: ILoadOrderDisplayItem) => any;
-  onChangeIndex: (oldIndex: number, newIndex: number, take: () => any) => void;
+  take: (item: ILoadOrderDisplayItem, list: ILoadOrderDisplayItem[]) => any;
+  onChangeIndex: (oldIndex: number, newIndex: number,
+                  changeContainer: boolean, take: (list: ILoadOrderDisplayItem[]) => any) => void;
   apply: () => void;
 }
 
@@ -73,7 +74,7 @@ const entrySource: __ReactDnd.DragSourceSpec<IItemProps> = {
       index: props.index,
       item: props.item,
       containerId: props.containerId,
-      take: () => props.take(props.item),
+      take: (list: ILoadOrderDisplayItem[]) => props.take(props.item, list),
     };
   },
   endDrag(props, monitor: __ReactDnd.DragSourceMonitor) {
@@ -100,14 +101,17 @@ const entryTarget: __ReactDnd.DropTargetSpec<IItemProps> = {
       return;
     }
 
-    props.onChangeIndex(index, hoverIndex, take);
+    props.onChangeIndex(index, hoverIndex, containerId !== props.containerId, take);
 
     (monitor.getItem() as any).index = hoverIndex;
     if (containerId !== props.containerId) {
       (monitor.getItem() as any).containerId = props.containerId;
-      (monitor.getItem() as any).take = () => props.take(item);
+      (monitor.getItem() as any).take = (list) => props.take(item, list);
     }
   },
+  drop(props) {
+    props.apply();
+  }
 };
 
 const Draggable = DropTarget(DND_TYPE, entryTarget, collectDrop)(
@@ -171,26 +175,33 @@ class DraggableList extends ComponentEx<IProps, IState> {
       </div>);
   }
 
-  public take = (item: ILoadOrderDisplayItem) => {
-    const { ordered } = this.state;
-    const index = ordered.findIndex(iter => iter.id === item.id);
-    const copy = ordered.slice(0);
-    const res = copy.splice(index, 1)[0];
-    this.nextState.ordered = copy;
-    return res;
-  }
-
-  public changeIndex = (oldIndex: number, newIndex: number, take: () => ILoadOrderDisplayItem) => {
+  public changeIndex = (oldIndex: number, newIndex: number, changeContainer: boolean,
+                        take: (list: any[]) => any) => {
     if (oldIndex === undefined) {
       return;
     }
 
-    const item = take();
-    const copy = this.state.ordered.slice(0);
+    const copy = this.state.ordered.slice();
+    const item = take(changeContainer ? undefined : copy);
     copy.splice(newIndex, 0, item);
 
     this.nextState.ordered = copy;
-    this.applyDebouncer.schedule();
+  }
+
+  private take = (item: any, list: any[]) => {
+    const { ordered } = this.nextState;
+    let res = item;
+    const index = ordered.findIndex(iter => iter.id === item.id);
+    if (index !== -1) {
+      if (list !== undefined) {
+        res = list.splice(index, 1)[0];
+      } else {
+        const copy = ordered.slice();
+        res = copy.splice(index, 1)[0];
+        this.nextState.ordered = copy;
+      }
+    }
+    return res;
   }
 
   private apply = () => {
@@ -204,11 +215,11 @@ const containerTarget: __ReactDnd.DropTargetSpec<IProps> = {
     const { containerId, index, item, take } = (monitor.getItem() as any);
 
     if (containerId !== props.id) {
-      (component as any).changeIndex(index, 0, take);
+      (component as any).changeIndex(index, 0, true, take);
 
       (monitor.getItem() as any).index = 0;
       (monitor.getItem() as any).containerId = props.id;
-      (monitor.getItem() as any).take = () => (component as any).take(item);
+      (monitor.getItem() as any).take = (list) => (component as any).take(item, list);
     }
   },
 };

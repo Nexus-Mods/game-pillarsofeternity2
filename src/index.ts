@@ -25,7 +25,7 @@ function genAttributeExtractor(api: types.IExtensionApi) {
       .catch(() => '{}')
       .then(jsonData => {
         try {
-          const data = JSON.parse(jsonData);
+          const data = JSON.parse((util as any).deBOM(jsonData));
           const res: { [key: string]: any } = {
             // is this case insensitive?
             minGameVersion: (util as any).getSafeCI(data, ['SupportedGameVersion', 'min'], '1.0'),

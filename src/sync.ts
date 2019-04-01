@@ -21,7 +21,7 @@ function updateLoadOrder(tries: number = 3): Promise<void> {
     .catch(() => '{}')
     .then(jsonData => {
       try {
-        const data = JSON.parse(jsonData);
+        const data = JSON.parse((util as any).deBOM(jsonData));
         loadOrder = (data.Entries || []).reduce((prev, entry, idx) => {
           prev[entry.FolderName] = {
             pos: idx,
@@ -52,7 +52,7 @@ export function setLoadOrder(order: ILoadOrder) {
   fs.readFileAsync(modConfig(), { encoding: 'utf-8' })
     .catch(() => '{}')
     .then(jsonData => {
-      const data = JSON.parse(jsonData);
+      const data = JSON.parse((util as any).deBOM(jsonData));
       data.Entries = Object.keys(loadOrder)
         .sort((lhs, rhs) => loadOrder[lhs].pos - loadOrder[rhs].pos)
         .reduce((prev, key) => {

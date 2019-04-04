@@ -5,7 +5,7 @@ import LoadOrderEntry from './LoadOrderEntry';
 
 import * as React from 'react';
 import { Panel } from 'react-bootstrap';
-import { translate } from 'react-i18next';
+import { withTranslation } from 'react-i18next';
 import { ComponentEx, DNDContainer, FlexLayout, MainPage, types, util } from 'vortex-api';
 
 const PanelX: any = Panel;
@@ -143,4 +143,5 @@ class LoadOrder extends ComponentEx<ILoadOrderProps, ILoadOrderState> {
   }
 }
 
-export default translate(['common', 'game-pillarsofeternity2'], { wait: false })(LoadOrder);
+export default withTranslation(['common', 'game-pillarsofeternity2'])(
+  LoadOrder as any) as React.ComponentClass<ILoadOrderProps>;

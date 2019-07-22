@@ -84,7 +84,7 @@ const emptyObj = {};
 function init(context: types.IExtensionContext) {
   (context as any).registerGame({
     id: 'pillarsofeternity2',
-    name: 'Pillars Of Eternity II: Deadfire',
+    name: 'Pillars Of Eternity II:\tDeadfire',
     mergeMods: false,
     queryPath: findGame,
     queryModPath: modPath,

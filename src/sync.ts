@@ -1,6 +1,6 @@
 import { ILoadOrder } from './types';
 
-import * as Promise from 'bluebird';
+import Promise from 'bluebird';
 import { app as appIn, remote } from 'electron';
 import * as path from 'path';
 import { fs, log, types, util } from 'vortex-api';

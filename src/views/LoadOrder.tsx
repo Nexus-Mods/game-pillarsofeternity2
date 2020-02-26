@@ -11,10 +11,10 @@ import { ComponentEx, DNDContainer, FlexLayout, MainPage, types, util } from 'vo
 const PanelX: any = Panel;
 
 export interface ILoadOrderProps {
-  mods: { [modId: string]: types.IMod },
-  profile: types.IProfile,
-  loadOrder: ILoadOrder,
-  onSetLoadOrder: (order: ILoadOrder) => void,
+  mods: { [modId: string]: types.IMod };
+  profile: types.IProfile;
+  loadOrder: ILoadOrder;
+  onSetLoadOrder: (order: ILoadOrder) => void;
 }
 
 interface ILoadOrderState {
@@ -36,8 +36,10 @@ class LoadOrder extends ComponentEx<ILoadOrderProps, ILoadOrderState> {
       const { enabled, disabled } = this.state;
       const newOrder: ILoadOrder = {};
       const numEnabled = enabled.length;
-      enabled.forEach((item, idx) => newOrder[item.id] = { pos: idx, enabled: true });
-      disabled.forEach((item, idx) => newOrder[item.id] = { pos: numEnabled + idx, enabled: false });
+      enabled.forEach((item, idx) =>
+        newOrder[item.id] = { pos: idx, enabled: true });
+      disabled.forEach((item, idx) =>
+        newOrder[item.id] = { pos: numEnabled + idx, enabled: false });
 
       this.props.onSetLoadOrder(newOrder);
       return null;
@@ -48,7 +50,7 @@ class LoadOrder extends ComponentEx<ILoadOrderProps, ILoadOrderState> {
     this.updateState(this.props);
   }
 
-  public componentWillReceiveProps(newProps: ILoadOrderProps) {
+  public UNSAFE_componentWillReceiveProps(newProps: ILoadOrderProps) {
     if ((this.props.loadOrder !== newProps.loadOrder)
         || (this.props.mods !== newProps.mods)
         || (this.props.profile !== newProps.profile)) {
@@ -110,7 +112,8 @@ class LoadOrder extends ComponentEx<ILoadOrderProps, ILoadOrderState> {
     const { mods, loadOrder, profile } = props;
 
     const sorted = Object.keys(loadOrder || {})
-      .filter(lo => (mods[lo] !== undefined) && util.getSafe(profile, ['modState', lo, 'enabled'], false))
+      .filter(lo => (mods[lo] !== undefined)
+                 && util.getSafe(profile, ['modState', lo, 'enabled'], false))
       .sort((lhs, rhs) => loadOrder[lhs].pos - loadOrder[rhs].pos);
 
     const mapToItem = (id: string) => ({ id, name: util.renderModName(mods[id]) });
@@ -130,15 +133,15 @@ class LoadOrder extends ComponentEx<ILoadOrderProps, ILoadOrderState> {
 
   private applyEnabled = (ordered: ILoadOrderDisplayItem[]) => {
     this.nextState.enabled = ordered;
-    this.nextState.disabled = this.state.disabled.filter(entry => 
-      ordered.find(item => item.id === entry.id) === undefined)
+    this.nextState.disabled = this.state.disabled.filter(entry =>
+      ordered.find(item => item.id === entry.id) === undefined);
     this.mWriteDebouncer.schedule();
   }
 
   private applyDisabled = (ordered: ILoadOrderDisplayItem[]) => {
     this.nextState.disabled = ordered;
-    this.nextState.enabled = this.state.enabled.filter(entry => 
-      ordered.find(item => item.id === entry.id) === undefined)
+    this.nextState.enabled = this.state.enabled.filter(entry =>
+      ordered.find(item => item.id === entry.id) === undefined);
     this.mWriteDebouncer.schedule();
   }
 }

@@ -111,7 +111,7 @@ const entryTarget: __ReactDnd.DropTargetSpec<IItemProps> = {
   },
   drop(props) {
     props.apply();
-  }
+  },
 };
 
 const Draggable = DropTarget(DND_TYPE, entryTarget, collectDrop)(
@@ -147,7 +147,7 @@ class DraggableList extends ComponentEx<IProps, IState> {
 
   }
 
-  public componentWillReceiveProps(newProps: IProps) {
+  public UNSAFE_componentWillReceiveProps(newProps: IProps) {
     if (this.props.items !== newProps.items) {
       this.nextState.ordered = newProps.items.slice(0);
     }
@@ -156,23 +156,24 @@ class DraggableList extends ComponentEx<IProps, IState> {
   public render(): JSX.Element {
     const { connectDropTarget, id, itemRenderer } = this.props;
     const { ordered } = this.state;
-    return connectDropTarget(
+    return connectDropTarget((
       <div style={{ overflow: 'auto', maxHeight: '100%' }}>
         <ListGroup>
           {ordered.map((item, idx) => (
-              <Draggable
-                containerId={id}
-                key={item.id}
-                item={item}
-                index={idx}
-                itemRenderer={itemRenderer}
-                take={this.take}
-                onChangeIndex={this.changeIndex}
-                apply={this.apply}
-              />
-            ))}
+            <Draggable
+              containerId={id}
+              key={item.id}
+              item={item}
+              index={idx}
+              itemRenderer={itemRenderer}
+              take={this.take}
+              onChangeIndex={this.changeIndex}
+              apply={this.apply}
+            />
+          ))}
         </ListGroup>
-      </div>);
+      </div>
+    ));
   }
 
   public changeIndex = (oldIndex: number, newIndex: number, changeContainer: boolean,

@@ -41,7 +41,7 @@ function genAttributeExtractor(api: types.IExtensionApi) {
 }
 
 function findGame(): Promise<string> {
-  return util.steam.findByName('Pillars of Eternity II: Deadfire')
+  return (util.steam as any).findByName('Pillars of Eternity II: Deadfire')
       .then(game => game.gamePath);
 }
 

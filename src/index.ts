@@ -3,7 +3,7 @@ import LoadOrder from './views/LoadOrder';
 import { getLoadOrder, setLoadOrder, startWatch, stopWatch } from './sync';
 import { ILoadOrder } from './types';
 
-import * as Promise from 'bluebird';
+import Promise from 'bluebird';
 import { app as appIn, remote } from 'electron';
 import * as path from 'path';
 import { fs, log, selectors, types, util } from 'vortex-api';
@@ -41,7 +41,7 @@ function genAttributeExtractor(api: types.IExtensionApi) {
 }
 
 function findGame(): Promise<string> {
-  return util.steam.findByName('Pillars of Eternity II: Deadfire')
+  return (util.steam as any).findByName('Pillars of Eternity II: Deadfire')
       .then(game => game.gamePath);
 }
 

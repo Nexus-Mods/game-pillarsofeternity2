@@ -95,6 +95,9 @@ function init(context: types.IExtensionContext) {
     ],
     supportedTools: tools,
     setup: prepareForModding,
+    environment: {
+      SteamAPPId: '560130',
+    },
     details: {
       steamAppId: 560130,
     },

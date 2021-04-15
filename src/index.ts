@@ -14,6 +14,10 @@ const poe2LocalLowPath = path.resolve(app.getPath('appData'),
 
 const tools = [];
 
+const MODIFIABLE_WIN_APPS = 'modifiablewindowsapps'
+const MS_ID = 'VersusEvil.PillarsofEternity2-PC';
+const STEAM_ID = '560130';
+
 function genAttributeExtractor(api: types.IExtensionApi) {
   // tslint:disable-next-line:no-shadowed-variable
   return (modInfo: any, modPath: string): Promise<{ [key: string]: any }> => {
@@ -41,21 +45,24 @@ function genAttributeExtractor(api: types.IExtensionApi) {
 }
 
 function findGame(): Promise<string> {
-  return (util.steam as any).findByName('Pillars of Eternity II: Deadfire')
-      .then(game => game.gamePath);
+  return util.GameStoreHelper.findByAppId([STEAM_ID, MS_ID])
+    .catch(err => (util.steam as any).findByName('Pillars of Eternity II: Deadfire'))
+    .then(game => game.gamePath);
 }
 
-function modPath(): string {
-  return path.join('PillarsOfEternityII_Data', 'override');
+function modPath(discoveryPath: string): string {
+  return (discoveryPath.includes('ModifiableWindowsApps'))
+    ? path.join('PillarsOfEternity2_Data', 'override')
+    : path.join('PillarsOfEternityII_Data', 'override');
 }
 
 function modConfig(): string {
   return path.join(poe2LocalLowPath, 'modconfig.json');
 }
 
-function prepareForModding(discovery): Promise<void> {
+function prepareForModding(discovery: types.IDiscoveryResult): Promise<void> {
   return createModConfigFile().then(
-    () => fs.ensureDirAsync(path.join(discovery.path, modPath())));
+    () => fs.ensureDirWritableAsync(path.join(discovery.path, modPath(discovery.path))));
 }
 
 function createModConfigFile(): Promise<void> {
@@ -70,6 +77,16 @@ function createModConfigFile(): Promise<void> {
     });
 }
 
+function executable(discoveryPath: string) {
+  if (discoveryPath === undefined) {
+    return 'PillarsOfEternityII.exe';
+  } else {
+    return (discoveryPath.toLowerCase().includes(MODIFIABLE_WIN_APPS))
+      ? 'PillarsOfEternity2.exe'
+      : 'PillarsOfEternityII.exe';
+  }
+}
+
 function writeModConfigFile(): Promise<void> {
   const data = {
     Entries: [],
@@ -79,27 +96,42 @@ function writeModConfigFile(): Promise<void> {
       JSON.stringify(data, undefined, 2), { encoding: 'utf-8' }));
 }
 
-const emptyObj = {};
+function requiresLauncher(gamePath: string) {
+  return (gamePath.toLowerCase().includes(MODIFIABLE_WIN_APPS))
+    ? Promise.resolve({
+        launcher: 'xbox',
+        addInfo: {
+          appId: MS_ID,
+          parameters: [
+            { appExecName: 'App' },
+          ],
+        }
+      })
+    : Promise.resolve(undefined);
+}
 
+const emptyObj = {};
 function init(context: types.IExtensionContext) {
   (context as any).registerGame({
     id: 'pillarsofeternity2',
     name: 'Pillars Of Eternity II:\tDeadfire',
     mergeMods: false,
     queryPath: findGame,
-    queryModPath: modPath,
+    queryModPath: (discoveryPath) => modPath(discoveryPath),
     logo: 'gameart.png',
-    executable: () => 'PillarsOfEternityII.exe',
-    requiredFiles: [
-      'PillarsOfEternityII.exe',
-    ],
+    executable,
+    requiresLauncher,
+    // There are absolutely NO common filepaths between the regular
+    //  PoEII variant and the Game Pass variant. Which is why the
+    //  requiredFiles array is empty.
+    requiredFiles: [],
     supportedTools: tools,
     setup: prepareForModding,
     environment: {
-      SteamAPPId: '560130',
+      SteamAPPId: STEAM_ID,
     },
     details: {
-      steamAppId: 560130,
+      steamAppId: +STEAM_ID,
     },
   });
 

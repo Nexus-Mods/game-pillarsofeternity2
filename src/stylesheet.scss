@@ -17,3 +17,29 @@
     padding: 0 $gutter-width;
   }
 }
+
+#pillars2-collections-layout {
+  flex: 1 1 0;
+  position: relative;
+  overflow: auto;
+  #pillars2-list-group {
+    .pillars2-load-order-entry {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      background-color: $brand-bg;
+      margin: 0px;
+
+      height: 100%;
+      overflow: auto;
+      border-width: 1px;
+      border-style: solid;
+      border-color: $gray;
+    
+      .load-order-index {
+        padding: 2px 2px;
+        margin-right: 15px;
+      }
+    }
+  }
+}

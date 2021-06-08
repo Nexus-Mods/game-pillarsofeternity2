@@ -1,6 +1,6 @@
 {
   "name": "game-pillarsofeternity2",
-  "version": "0.2.1",
+  "version": "0.3.0",
   "description": "Vortex support for Pillars Of Eternity 2: Deadfire",
   "main": "./out/index.js",
   "repository": "",
@@ -14,7 +14,7 @@
   "license": "GPL-3.0",
   "babel": {
     "presets": [
-      "es2015"
+      "es2016"
     ]
   },
   "devDependencies": {
@@ -33,8 +33,8 @@
     "react-redux": "^5.0.7",
     "redux-act": "^1.7.4",
     "semver": "^5.5.0",
-    "ts-loader": "^5.3.3",
-    "typescript": "^2.9.2",
+    "ts-loader": "^6.0.4",
+    "typescript": "^3.5.2",
     "vortex-api": "Nexus-Mods/vortex-api",
     "webpack": "^4.29.6"
   }

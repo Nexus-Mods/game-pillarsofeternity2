@@ -8,6 +8,14 @@ import { app as appIn, remote } from 'electron';
 import * as path from 'path';
 import { fs, log, selectors, types, util } from 'vortex-api';
 
+import { genCollectionsData, parseCollectionsData } from './collections/collections';
+import { IPoE2CollectionsData } from './collections/types';
+import { sanitizeLO } from './collections/util';
+
+import CollectionsDataView from './collections/CollectionsDataView';
+
+import { GAME_ID } from './statics';
+
 const app = remote !== undefined ? remote.app : appIn;
 const poe2LocalLowPath = path.resolve(app.getPath('appData'),
   '..', 'LocalLow', 'Obsidian Entertainment', 'Pillars of Eternity II');
@@ -22,7 +30,7 @@ function genAttributeExtractor(api: types.IExtensionApi) {
   // tslint:disable-next-line:no-shadowed-variable
   return (modInfo: any, modPath: string): Promise<{ [key: string]: any }> => {
     const gameMode = selectors.activeGameId(api.store.getState());
-    if ((modPath === undefined) || (gameMode !== 'pillarsofeternity2')) {
+    if ((modPath === undefined) || (gameMode !== GAME_ID)) {
       return Promise.resolve({});
     }
     return fs.readFileAsync(path.join(modPath, 'manifest.json'), { encoding: 'utf-8' })
@@ -113,7 +121,7 @@ function requiresLauncher(gamePath: string) {
 const emptyObj = {};
 function init(context: types.IExtensionContext) {
   (context as any).registerGame({
-    id: 'pillarsofeternity2',
+    id: GAME_ID,
     name: 'Pillars Of Eternity II:\tDeadfire',
     mergeMods: false,
     queryPath: findGame,
@@ -139,15 +147,23 @@ function init(context: types.IExtensionContext) {
     id: 'pillars2-loadorder',
     hotkey: 'E',
     group: 'per-game',
-    visible: () => selectors.activeGameId(context.api.store.getState()) === 'pillarsofeternity2',
+    visible: () => selectors.activeGameId(context.api.store.getState()) === GAME_ID,
     props: () => {
       const state: types.IState = context.api.store.getState();
+      const mods = state.persistent.mods[GAME_ID] || emptyObj;
+      const sanitizedMods = Object.keys(mods).reduce((accum, iter) => {
+        if (mods[iter]?.type !== 'collection') {
+          accum[iter] = mods[iter];
+        }
+        return accum;
+      }, {})
       return {
-        mods: state.persistent.mods['pillarsofeternity2'] || emptyObj,
+        mods: sanitizedMods || emptyObj,
         profile: selectors.activeProfile(state),
         loadOrder: getLoadOrder(),
         onSetLoadOrder: (order: ILoadOrder) => {
-          setLoadOrder(order);
+          const newLO = sanitizeLO(context.api, order);
+          setLoadOrder(newLO);
         },
       };
     },
@@ -155,9 +171,20 @@ function init(context: types.IExtensionContext) {
 
   context.registerAttributeExtractor(100, genAttributeExtractor(context.api));
 
+  context['registerCollectionFeature'](
+    'poe2_collection_data',
+    (gameId: string, includedMods: string[]) =>
+      genCollectionsData(context, gameId, includedMods),
+    (gameId: string, collection: IPoE2CollectionsData) =>
+      parseCollectionsData(context, gameId, collection),
+    (t) => t('Pillars of Eternity 2 Data'),
+    (state: types.IState, gameId: string) => gameId === GAME_ID,
+    CollectionsDataView,
+  );
+
   context.once(() => {
     context.api.events.on('gamemode-activated', (gameMode: string) => {
-      if (gameMode === 'pillarsofeternity2') {
+      if (gameMode === GAME_ID) {
         startWatch(context.api.store.getState())
           .catch(util.DataInvalid, err => {
             const errorMessage = 'Your mod configuration file is invalid, you must remove/fix '

@@ -1,13 +1,10 @@
 import { ILoadOrder } from './types';
 
 import Promise from 'bluebird';
-import { app as appIn, remote } from 'electron';
 import * as path from 'path';
 import { fs, log, types, util } from 'vortex-api';
 
-const app = remote !== undefined ? remote.app : appIn;
-
-const poe2Path = path.resolve(app.getPath('appData'), '..', 'LocalLow', 'Obsidian Entertainment', 'Pillars of Eternity II');
+const poe2Path = path.resolve(util.getVortexPath('appData'), '..', 'LocalLow', 'Obsidian Entertainment', 'Pillars of Eternity II');
 
 let watcher: fs.FSWatcher;
 let loadOrder: ILoadOrder = util.makeReactive({});

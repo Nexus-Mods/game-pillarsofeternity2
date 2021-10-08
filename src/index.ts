@@ -4,12 +4,10 @@ import { getLoadOrder, setLoadOrder, startWatch, stopWatch } from './sync';
 import { ILoadOrder } from './types';
 
 import Promise from 'bluebird';
-import { app as appIn, remote } from 'electron';
 import * as path from 'path';
 import { fs, log, selectors, types, util } from 'vortex-api';
 
-const app = remote !== undefined ? remote.app : appIn;
-const poe2LocalLowPath = path.resolve(app.getPath('appData'),
+const poe2LocalLowPath = path.resolve(util.getVortexPath('appData'),
   '..', 'LocalLow', 'Obsidian Entertainment', 'Pillars of Eternity II');
 
 const tools = [];

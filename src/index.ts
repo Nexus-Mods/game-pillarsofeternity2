@@ -94,8 +94,8 @@ function writeModConfigFile(): Promise<void> {
       JSON.stringify(data, undefined, 2), { encoding: 'utf-8' }));
 }
 
-function requiresLauncher(gamePath: string) {
-  return (gamePath.toLowerCase().includes(MODIFIABLE_WIN_APPS))
+function requiresLauncher(gamePath: string, store?: string) {
+  return store === 'xbox' || (gamePath.toLowerCase().includes(MODIFIABLE_WIN_APPS))
     ? Promise.resolve({
         launcher: 'xbox',
         addInfo: {
